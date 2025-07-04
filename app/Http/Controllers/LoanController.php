@@ -9,13 +9,14 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Middleware\EnsureUserIsActive;
 
 class LoanController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('active');
+        $this->middleware(EnsureUserIsActive::class);
     }
 
     /**

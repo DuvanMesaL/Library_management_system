@@ -6,13 +6,14 @@ use App\Models\Claim;
 use App\Models\Loan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Middleware\EnsureUserIsActive;
 
 class ClaimController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('active');
+        $this->middleware(EnsureUserIsActive::class);
     }
 
     /**

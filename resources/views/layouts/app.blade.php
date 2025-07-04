@@ -91,6 +91,30 @@
                                     Dashboard
                                 </a>
 
+                                <a href="{{ route('loans.index') }}"
+                                   class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('loans.*') ? 'border-amber-500 text-amber-700' : 'border-transparent text-amber-600 hover:text-amber-700 hover:border-amber-300' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10a2 2 0 002 2h4a2 2 0 002-2V11m-6 0h6"/>
+                                    </svg>
+                                    @if(auth()->user()->isLector())
+                                        Mis Préstamos
+                                    @else
+                                        Préstamos
+                                    @endif
+                                </a>
+
+                                <a href="{{ route('claims.index') }}"
+                                   class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('claims.*') ? 'border-amber-500 text-amber-700' : 'border-transparent text-amber-600 hover:text-amber-700 hover:border-amber-300' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    @if(auth()->user()->isLector())
+                                        Mis Reclamos
+                                    @else
+                                        Reclamos
+                                    @endif
+                                </a>
+
                                 @can('manage-books')
                                     <a href="#"
                                        class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-amber-600 hover:text-amber-700 hover:border-amber-300 text-sm font-medium leading-5 transition duration-150 ease-in-out">
