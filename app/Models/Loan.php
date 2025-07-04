@@ -61,4 +61,19 @@ class Loan extends Model
 
         $this->book->increaseAvailability();
     }
+
+    public function claims()
+    {
+        return $this->hasMany(Claim::class);
+    }
+
+    public function hasPendingClaims()
+    {
+        return $this->claims()->where('status', 'pending')->exists();
+    }
+
+    public function canBeClaimed()
+    {
+        return $this->status === 'active' && !$this->hasPendingClaims();
+    }
 }
