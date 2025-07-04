@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('isbn', 20)->unique()->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->text('description')->nullable();
-            $table->year('publication_year')->nullable();
+            $table->integer('publication_year');
             $table->integer('copies_total')->default(1);
             $table->integer('copies_available')->default(1);
             $table->timestamps();
