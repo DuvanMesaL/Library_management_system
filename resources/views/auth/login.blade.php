@@ -109,7 +109,7 @@
         <div class="mt-8 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-amber-200">
             <h3 class="text-sm font-medium text-amber-800 mb-2">Usuarios de Prueba:</h3>
             <div class="text-xs text-amber-700 space-y-1">
-                <p><strong>Admin:</strong> admin@biblioteca.com (password123)</p>
+                <p><strong>Admin:</strong> admin@biblioteca.com (admin123)</p>
                 <p><strong>Bibliotecario:</strong> bibliotecario@biblioteca.com (password123)</p>
                 <p><strong>Lector:</strong> lector@biblioteca.com (password123)</p>
             </div>

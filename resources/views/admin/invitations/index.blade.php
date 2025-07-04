@@ -8,7 +8,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-bold text-amber-900 font-serif">Gestión de Invitaciones</h1>
-                    <p class="text-amber-700 mt-2">Administra las invitaciones enviadas a nuevos usuarios</p>
+                    <p class="text-amber-700 mt-2">Invita nuevos usuarios a la biblioteca</p>
                 </div>
                 <a href="{{ route('admin.invitations.create') }}"
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-medium rounded-lg shadow-lg transition duration-300 transform hover:scale-105">
@@ -34,16 +34,13 @@
                                     Rol
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-800 uppercase tracking-wider">
-                                    Invitado por
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-800 uppercase tracking-wider">
                                     Estado
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-800 uppercase tracking-wider">
-                                    Fecha
+                                    Enviado por
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-800 uppercase tracking-wider">
-                                    Expira
+                                    Fecha
                                 </th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-amber-800 uppercase tracking-wider">
                                     Acciones
@@ -54,55 +51,49 @@
                             @foreach($invitations as $invitation)
                                 <tr class="hover:bg-amber-50/50 transition duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 bg-amber-100 rounded-full flex items-center justify-center">
-                                                <svg class="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
-                                                </svg>
-                                            </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">{{ $invitation->email }}</div>
-                                            </div>
-                                        </div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $invitation->email }}</div>
+                                        @if($invitation->message)
+                                            <div class="text-sm text-gray-600">{{ Str::limit($invitation->message, 50) }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($invitation->role->name === 'admin') bg-red-100 text-red-800
-                                            @elseif($invitation->role->name === 'bibliotecario') bg-blue-100 text-blue-800
-                                            @else bg-green-100 text-green-800 @endif">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                             {{ ucfirst($invitation->role->name) }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($invitation->isExpired())
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                Expirada
+                                            </span>
+                                        @elseif($invitation->accepted_at)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Aceptada
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Pendiente
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $invitation->invitedBy->name }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($invitation->status === 'pending') bg-yellow-100 text-yellow-800
-                                            @elseif($invitation->status === 'accepted') bg-green-100 text-green-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            @if($invitation->status === 'pending') Pendiente
-                                            @elseif($invitation->status === 'accepted') Aceptada
-                                            @else Expirada @endif
-                                        </span>
-                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $invitation->created_at->format('d/m/Y H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $invitation->expires_at->format('d/m/Y H:i') }}
+                                        {{ $invitation->created_at->format('d/m/Y') }}
+                                        <div class="text-xs text-gray-500">
+                                            Expira: {{ $invitation->expires_at->format('d/m/Y') }}
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        @if($invitation->status === 'pending')
+                                        @if(!$invitation->accepted_at)
                                             <form action="{{ route('admin.invitations.destroy', $invitation) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         onclick="return confirm('¿Estás seguro de eliminar esta invitación?')"
                                                         class="text-red-600 hover:text-red-900 transition duration-150">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                    </svg>
+                                                    Eliminar
                                                 </button>
                                             </form>
                                         @endif
@@ -120,7 +111,7 @@
             @else
                 <div class="text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 009.586 13H7"/>
                     </svg>
                     <h3 class="mt-2 text-sm font-medium text-amber-900">No hay invitaciones</h3>
                     <p class="mt-1 text-sm text-amber-600">Comienza enviando tu primera invitación.</p>

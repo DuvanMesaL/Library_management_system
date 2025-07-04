@@ -14,7 +14,7 @@
                 </a>
                 <div>
                     <h1 class="text-3xl font-bold text-amber-900 font-serif">Nueva Invitación</h1>
-                    <p class="text-amber-700 mt-2">Invita a un nuevo usuario al sistema</p>
+                    <p class="text-amber-700 mt-2">Invita a un nuevo usuario a la biblioteca</p>
                 </div>
             </div>
         </div>
@@ -37,12 +37,11 @@
                         </div>
                         <input id="email" name="email" type="email" required
                                class="block w-full pl-10 pr-3 py-3 border border-amber-300 rounded-lg leading-5 bg-white/50 placeholder-amber-500 focus:outline-none focus:placeholder-amber-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition duration-150 ease-in-out"
-                               placeholder="usuario@email.com" value="{{ old('email') }}">
+                               placeholder="usuario@ejemplo.com" value="{{ old('email') }}">
                     </div>
                     @error('email')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="mt-2 text-sm text-amber-600">El usuario recibirá un email con el enlace de registro</p>
                 </div>
 
                 <!-- Role -->
@@ -61,7 +60,10 @@
                             <option value="">Selecciona un rol</option>
                             @foreach($roles as $role)
                                 <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                    {{ ucfirst($role->name) }} - {{ $role->description }}
+                                    {{ ucfirst($role->name) }}
+                                    @if($role->description)
+                                        - {{ $role->description }}
+                                    @endif
                                 </option>
                             @endforeach
                         </select>
@@ -71,26 +73,35 @@
                     @enderror
                 </div>
 
-                <!-- Role Descriptions -->
-                <div class="bg-amber-50 rounded-lg p-4 border border-amber-200">
-                    <h4 class="text-sm font-medium text-amber-800 mb-3">Descripción de Roles:</h4>
-                    <div class="space-y-2 text-sm text-amber-700">
-                        <div class="flex items-start space-x-2">
-                            <div class="h-2 w-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <div>
-                                <strong>Administrador:</strong> Acceso completo al sistema, puede invitar usuarios y gestionar toda la plataforma.
-                            </div>
+                <!-- Message -->
+                <div>
+                    <label for="message" class="block text-sm font-medium text-amber-800 mb-2">
+                        Mensaje Personalizado (Opcional)
+                    </label>
+                    <textarea id="message" name="message" rows="4"
+                              class="w-full border border-amber-300 rounded-lg px-3 py-3 bg-white/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                              placeholder="Mensaje de bienvenida personalizado...">{{ old('message') }}</textarea>
+                    @error('message')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
-                        <div class="flex items-start space-x-2">
-                            <div class="h-2 w-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <div>
-                                <strong>Bibliotecario:</strong> Gestiona libros, préstamos y devoluciones. No puede invitar usuarios.
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-2">
-                            <div class="h-2 w-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                            <div>
-                                <strong>Lector:</strong> Consulta catálogo, solicita préstamos y visualiza su historial personal.
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-amber-800">Información importante</h3>
+                            <div class="mt-2 text-sm text-amber-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>La invitación expirará en 7 días</li>
+                                    <li>Se enviará un correo con instrucciones de registro</li>
+                                    <li>El usuario deberá verificar su correo electrónico</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -105,7 +116,7 @@
                     <button type="submit"
                             class="px-6 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-medium rounded-lg shadow-lg transition duration-300 transform hover:scale-105">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 009.586 13H7"/>
                         </svg>
                         Enviar Invitación
                     </button>

@@ -18,6 +18,7 @@ class Book extends Model
         'publication_year',
         'copies_total',
         'copies_available',
+        'cover_image',
     ];
 
     protected function casts(): array
@@ -61,5 +62,13 @@ class Book extends Model
         if ($this->copies_available < $this->copies_total) {
             $this->increment('copies_available');
         }
+    }
+
+    public function getCoverImageUrl()
+    {
+        if ($this->cover_image) {
+            return asset('storage/' . $this->cover_image);
+        }
+        return asset('images/book-placeholder.png');
     }
 }

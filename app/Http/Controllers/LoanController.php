@@ -102,18 +102,18 @@ class LoanController extends Controller
             return back()->with('error', 'El libro no está disponible para préstamo.');
         }
 
-        DB::transaction(function () use ($request, $book) {
-            // Create loan
+        $loanDays = (int) $request->input('loan_days');
+
+        DB::transaction(function () use ($request, $book, $loanDays) {
             Loan::create([
                 'user_id' => $request->user_id,
                 'book_id' => $request->book_id,
                 'loan_date' => Carbon::today(),
-                'due_date' => Carbon::today()->addDays($request->loan_days),
+                'due_date' => Carbon::today()->addDays($loanDays),
                 'status' => 'active',
                 'notes' => $request->notes,
             ]);
 
-            // Decrease book availability
             $book->decreaseAvailability();
         });
 
@@ -137,6 +137,93 @@ class LoanController extends Controller
         $loan->load(['user', 'book.category', 'claims.assignedTo']);
 
         return view('loans.show', compact('loan'));
+    }
+
+    /**
+     * Show the form for editing the specified loan
+     */
+    public function edit(Loan $loan)
+    {
+        $this->authorize('manage-loans');
+
+        $books = Book::with('category')->orderBy('title')->get();
+        $users = User::where('is_active', true)->orderBy('name')->get();
+
+        return view('loans.edit', compact('loan', 'books', 'users'));
+    }
+
+    /**
+     * Update the specified loan
+     */
+    public function update(Request $request, Loan $loan)
+    {
+        $this->authorize('manage-loans');
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'book_id' => 'required|exists:books,id',
+            'due_date' => 'required|date|after_or_equal:loan_date',
+            'status' => 'required|in:active,returned,overdue',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $oldBookId = $loan->book_id;
+        $newBookId = $request->book_id;
+        $oldStatus = $loan->status;
+        $newStatus = $request->status;
+
+        DB::transaction(function () use ($request, $loan, $oldBookId, $newBookId, $oldStatus, $newStatus) {
+            // If book changed, update availability
+            if ($oldBookId != $newBookId) {
+                // Return old book
+                $oldBook = Book::find($oldBookId);
+                if ($oldBook && $oldStatus === 'active') {
+                    $oldBook->increaseAvailability();
+                }
+
+                // Take new book
+                $newBook = Book::find($newBookId);
+                if ($newBook && $newStatus === 'active') {
+                    if (!$newBook->isAvailable()) {
+                        throw new \Exception('El libro seleccionado no está disponible.');
+                    }
+                    $newBook->decreaseAvailability();
+                }
+            }
+
+            // If status changed from active to returned
+            if ($oldStatus === 'active' && $newStatus === 'returned') {
+                $book = Book::find($newBookId);
+                if ($book) {
+                    $book->increaseAvailability();
+                }
+                $loan->return_date = Carbon::today();
+            }
+
+            // If status changed from returned to active
+            if ($oldStatus === 'returned' && $newStatus === 'active') {
+                $book = Book::find($newBookId);
+                if ($book) {
+                    if (!$book->isAvailable()) {
+                        throw new \Exception('El libro no está disponible para préstamo.');
+                    }
+                    $book->decreaseAvailability();
+                }
+                $loan->return_date = null;
+            }
+
+            // Update loan
+            $loan->update([
+                'user_id' => $request->user_id,
+                'book_id' => $request->book_id,
+                'due_date' => $request->due_date,
+                'status' => $request->status,
+                'notes' => $request->notes,
+            ]);
+        });
+
+        return redirect()->route('loans.show', $loan)
+            ->with('success', 'Préstamo actualizado exitosamente.');
     }
 
     /**
@@ -172,11 +259,13 @@ class LoanController extends Controller
             return back()->with('error', 'Solo se pueden extender préstamos activos.');
         }
 
+        $extendDays = (int) $request->input('extend_days');
+
         $loan->update([
-            'due_date' => $loan->due_date->addDays($request->extend_days),
+            'due_date' => $loan->due_date->addDays($extendDays),
         ]);
 
-        return back()->with('success', "Préstamo extendido por {$request->extend_days} días.");
+        return back()->with('success', "Préstamo extendido por {$extendDays} días.");
     }
 
     /**
