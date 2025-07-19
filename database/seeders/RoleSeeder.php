@@ -2,30 +2,34 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
 
 class RoleSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $roles = [
             [
                 'name' => 'admin',
-                'description' => 'Administrador con acceso completo al sistema'
+                'description' => 'Administrador del sistema con acceso completo',
             ],
             [
                 'name' => 'bibliotecario',
-                'description' => 'Gestiona libros, préstamos y devoluciones'
+                'description' => 'Bibliotecario con permisos de gestión de libros y préstamos',
             ],
             [
                 'name' => 'lector',
-                'description' => 'Consulta catálogo y solicita préstamos'
-            ]
+                'description' => 'Usuario lector con permisos básicos',
+            ],
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::firstOrCreate(['name' => $role['name']], $role);
         }
     }
 }

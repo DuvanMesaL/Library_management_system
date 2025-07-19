@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class Invitation extends Model
 {
@@ -16,18 +15,16 @@ class Invitation extends Model
         'role_id',
         'invited_by',
         'token',
-        'status',
         'expires_at',
         'accepted_at',
+        'is_used',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'expires_at' => 'datetime',
-            'accepted_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'accepted_at' => 'datetime',
+        'is_used' => 'boolean',
+    ];
 
     public function role()
     {
@@ -41,12 +38,46 @@ class Invitation extends Model
 
     public function isExpired()
     {
-        return $this->expires_at < Carbon::now();
+        return $this->expires_at < now();
     }
 
-    public function isPending()
+    public function isValid()
     {
-        return $this->status === 'pending' && !$this->isExpired();
+        return !$this->is_used && !$this->isExpired();
+    }
+
+    public function markAsUsed()
+    {
+        $this->update([
+            'is_used' => true,
+            'accepted_at' => now(),
+        ]);
+    }
+
+    public function getStatusText()
+    {
+        if ($this->is_used) {
+            return 'Aceptada';
+        }
+
+        if ($this->isExpired()) {
+            return 'Expirada';
+        }
+
+        return 'Pendiente';
+    }
+
+    public function getStatusBadgeClass()
+    {
+        if ($this->is_used) {
+            return 'bg-green-100 text-green-800';
+        }
+
+        if ($this->isExpired()) {
+            return 'bg-red-100 text-red-800';
+        }
+
+        return 'bg-yellow-100 text-yellow-800';
     }
 
     public static function generateToken()
@@ -54,18 +85,19 @@ class Invitation extends Model
         return Str::random(64);
     }
 
-    public function markAsAccepted()
+    public function scopeValid($query)
     {
-        $this->update([
-            'status' => 'accepted',
-            'accepted_at' => Carbon::now(),
-        ]);
+        return $query->where('is_used', false)
+                    ->where('expires_at', '>', now());
     }
 
-    public function markAsExpired()
+    public function scopeExpired($query)
     {
-        $this->update([
-            'status' => 'expired',
-        ]);
+        return $query->where('expires_at', '<', now());
+    }
+
+    public function scopeUsed($query)
+    {
+        return $query->where('is_used', true);
     }
 }

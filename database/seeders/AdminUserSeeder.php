@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
@@ -9,60 +10,49 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        // Ensure roles exist
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], [
-            'description' => 'Administrador del sistema'
-        ]);
+        $adminRole = Role::where('name', 'admin')->first();
+        $bibliotecarioRole = Role::where('name', 'bibliotecario')->first();
+        $lectorRole = Role::where('name', 'lector')->first();
 
-        $bibliotecarioRole = Role::firstOrCreate(['name' => 'bibliotecario'], [
-            'description' => 'Bibliotecario'
-        ]);
-
-        $lectorRole = Role::firstOrCreate(['name' => 'lector'], [
-            'description' => 'Lector'
-        ]);
-
-        // Create admin user
+        // Crear usuario administrador
         User::firstOrCreate(
             ['email' => 'admin@biblioteca.com'],
             [
                 'name' => 'Administrador',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make('password'),
                 'role_id' => $adminRole->id,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create bibliotecario user
+        // Crear usuario bibliotecario
         User::firstOrCreate(
             ['email' => 'bibliotecario@biblioteca.com'],
             [
                 'name' => 'Bibliotecario',
-                'password' => Hash::make('biblio123'),
+                'password' => Hash::make('password'),
                 'role_id' => $bibliotecarioRole->id,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]
         );
 
-        // Create lector user
+        // Crear usuario lector
         User::firstOrCreate(
             ['email' => 'lector@biblioteca.com'],
             [
-                'name' => 'Lector',
-                'password' => Hash::make('lector123'),
+                'name' => 'Usuario Lector',
+                'password' => Hash::make('password'),
                 'role_id' => $lectorRole->id,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]
         );
-
-        $this->command->info('Usuarios de prueba creados exitosamente:');
-        $this->command->info('Admin: admin@biblioteca.com / admin123');
-        $this->command->info('Bibliotecario: bibliotecario@biblioteca.com / biblio123');
-        $this->command->info('Lector: lector@biblioteca.com / lector123');
     }
 }

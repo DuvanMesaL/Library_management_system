@@ -3,7 +3,7 @@
 @section('content')
 <div class="py-12">
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <!-- Header -->
+        <!-- Header with Back Button -->
         <div class="mb-8">
             <div class="flex items-center space-x-4">
                 <a href="{{ route('books.index') }}"
@@ -14,41 +14,33 @@
                 </a>
                 <div>
                     <h1 class="text-3xl font-bold text-amber-900 font-serif">{{ $book->title }}</h1>
-                    <p class="text-amber-700 mt-2">Detalles del libro</p>
+                    <p class="text-amber-700 mt-2">por {{ $book->author }}</p>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Book Cover and Actions -->
+            <!-- Book Cover and Basic Info -->
             <div class="lg:col-span-1">
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6 sticky top-6">
                     <!-- Cover Image -->
                     <div class="mb-6">
-                        <div class="h-64 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center">
+                        <div class="aspect-[3/4] bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center overflow-hidden">
                             @if($book->cover_image)
                                 <img src="{{ $book->getCoverImageUrl() }}" alt="{{ $book->title }}"
-                                     class="h-full w-full object-cover rounded-lg">
+                                     class="w-full h-full object-cover">
                             @else
-                                <div class="text-center">
-                                    <svg class="h-20 w-20 text-amber-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
-                                    </svg>
-                                    <p class="text-sm text-amber-600 mt-2">Sin portada</p>
-                                </div>
+                                <svg class="h-24 w-24 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+                                </svg>
                             @endif
                         </div>
                     </div>
 
                     <!-- Availability Status -->
                     <div class="mb-6">
-                        <div class="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-200">
-                            <div>
-                                <p class="text-sm font-medium text-amber-800">Disponibilidad</p>
-                                <p class="text-lg font-bold text-amber-900">
-                                    {{ $book->copies_available }}/{{ $book->copies_total }} copias
-                                </p>
-                            </div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-medium text-gray-600">Disponibilidad:</span>
                             @if($book->isAvailable())
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -65,13 +57,19 @@
                                 </span>
                             @endif
                         </div>
+                        <div class="text-center">
+                            <span class="text-2xl font-bold text-gray-900">{{ $book->copies_available }}</span>
+                            <span class="text-gray-600"> de </span>
+                            <span class="text-lg font-semibold text-gray-700">{{ $book->copies_total }}</span>
+                            <p class="text-sm text-gray-500 mt-1">copias disponibles</p>
+                        </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="space-y-3">
                         @if($book->isAvailable() && auth()->user()->isLector())
                             <a href="{{ route('books.loan', $book) }}"
-                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg shadow-lg transition duration-300 transform hover:scale-105">
+                               class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg shadow-lg transition duration-300 transform hover:scale-105">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                 </svg>
@@ -80,26 +78,27 @@
                         @endif
 
                         @can('manage-books')
-                            <a href="{{ route('books.edit', $book) }}"
-                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg transition duration-300">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                                Editar Libro
-                            </a>
-
-                            <form action="{{ route('books.destroy', $book) }}" method="POST" class="w-full">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit"
-                                        onclick="return confirm('¿Estás seguro de eliminar este libro? Esta acción no se puede deshacer.')"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-medium rounded-lg shadow-lg transition duration-300">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            <div class="flex space-x-2">
+                                <a href="{{ route('books.edit', $book) }}"
+                                   class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-medium rounded-lg shadow transition duration-300">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
-                                    Eliminar Libro
-                                </button>
-                            </form>
+                                    Editar
+                                </a>
+                                <form method="POST" action="{{ route('books.destroy', $book) }}" class="flex-1"
+                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este libro?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="w-full inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg shadow transition duration-300">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
                         @endcan
                     </div>
                 </div>
@@ -109,90 +108,126 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Basic Information -->
                 <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
-                    <h2 class="text-xl font-semibold text-amber-900 mb-4">Información del Libro</h2>
-
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Información del Libro</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-amber-800">Título</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Título</label>
                             <p class="text-gray-900 font-medium">{{ $book->title }}</p>
                         </div>
-
                         <div>
-                            <label class="block text-sm font-medium text-amber-800">Autor</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Autor</label>
                             <p class="text-gray-900">{{ $book->author }}</p>
                         </div>
-
                         @if($book->isbn)
-                            <div>
-                                <label class="block text-sm font-medium text-amber-800">ISBN</label>
-                                <p class="text-gray-900 font-mono">{{ $book->isbn }}</p>
-                            </div>
-                        @endif
-
-                        @if($book->category)
-                            <div>
-                                <label class="block text-sm font-medium text-amber-800">Categoría</label>
-                                <p class="text-gray-900">{{ $book->category->name }}</p>
-                            </div>
-                        @endif
-
-                        @if($book->publication_year)
-                            <div>
-                                <label class="block text-sm font-medium text-amber-800">Año de Publicación</label>
-                                <p class="text-gray-900">{{ $book->publication_year }}</p>
-                            </div>
-                        @endif
-
                         <div>
-                            <label class="block text-sm font-medium text-amber-800">Copias Totales</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">ISBN</label>
+                            <p class="text-gray-900 font-mono">{{ $book->isbn }}</p>
+                        </div>
+                        @endif
+                        @if($book->category)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Categoría</label>
+                            <span class="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-sm rounded-full">
+                                {{ $book->category->name }}
+                            </span>
+                        </div>
+                        @endif
+                        @if($book->publication_year)
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Año de Publicación</label>
+                            <p class="text-gray-900">{{ $book->publication_year }}</p>
+                        </div>
+                        @endif
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Copias Totales</label>
                             <p class="text-gray-900">{{ $book->copies_total }}</p>
                         </div>
                     </div>
-
-                    @if($book->description)
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-amber-800 mb-2">Descripción</label>
-                            <p class="text-gray-700 leading-relaxed">{{ $book->description }}</p>
-                        </div>
-                    @endif
                 </div>
 
+                <!-- Description -->
+                @if($book->description)
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Descripción</h2>
+                    <p class="text-gray-700 leading-relaxed">{{ $book->description }}</p>
+                </div>
+                @endif
+
                 <!-- Recent Loans -->
-                @can('manage-loans')
-                    <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
-                        <h2 class="text-xl font-semibold text-amber-900 mb-4">Préstamos Recientes</h2>
-
-                        @if($recentLoans->count() > 0)
-                            <div class="space-y-3">
-                                @foreach($recentLoans as $loan)
-                                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-100">
-                                        <div>
-                                            <p class="font-medium text-gray-900">{{ $loan->user->name }}</p>
-                                            <p class="text-sm text-gray-600">{{ $loan->loan_date->format('d/m/Y') }} - {{ $loan->due_date->format('d/m/Y') }}</p>
-                                        </div>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($loan->status === 'active') bg-green-100 text-green-800
-                                            @elseif($loan->status === 'returned') bg-gray-100 text-gray-800
-                                            @else bg-red-100 text-red-800 @endif">
-                                            @if($loan->status === 'active') Activo
-                                            @elseif($loan->status === 'returned') Devuelto
-                                            @else Vencido @endif
-                                        </span>
-                                    </div>
-                                @endforeach
+                @if($recentLoans->count() > 0)
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Préstamos Recientes</h2>
+                    <div class="space-y-3">
+                        @foreach($recentLoans as $loan)
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ $loan->user->name }}</p>
+                                <p class="text-sm text-gray-600">
+                                    Prestado: {{ $loan->loan_date->format('d/m/Y') }}
+                                    @if($loan->due_date)
+                                        - Vence: {{ $loan->due_date->format('d/m/Y') }}
+                                    @endif
+                                </p>
                             </div>
-
-                            <div class="mt-4">
-                                <a href="{{ route('loans.index', ['book_search' => $book->title]) }}"
-                                   class="text-amber-600 hover:text-amber-700 text-sm font-medium">
-                                    Ver todos los préstamos de este libro →
-                                </a>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                    @if($loan->status === 'active') bg-blue-100 text-blue-800
+                                    @elseif($loan->status === 'returned') bg-green-100 text-green-800
+                                    @elseif($loan->status === 'overdue') bg-red-100 text-red-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ ucfirst($loan->status) }}
+                                </span>
                             </div>
-                        @else
-                            <p class="text-gray-600">Este libro no tiene préstamos registrados.</p>
-                        @endif
+                        </div>
+                        @endforeach
                     </div>
-                @endcan
+                </div>
+                @endif
+
+                <!-- Active Loans -->
+                @if($book->activeLoans->count() > 0)
+                <div class="bg-white/70 backdrop-blur-sm rounded-lg shadow-lg border border-amber-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Préstamos Activos</h2>
+                    <div class="space-y-3">
+                        @foreach($book->activeLoans as $loan)
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ $loan->user->name }}</p>
+                                <p class="text-sm text-gray-600">
+                                    Prestado: {{ $loan->loan_date->format('d/m/Y') }}
+                                    - Vence: {{ $loan->due_date->format('d/m/Y') }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                @can('manage-loans')
+                                <div class="flex space-x-2 mb-2">
+                                    <form method="POST" action="{{ route('loans.return', $loan) }}" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                                class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition duration-150">
+                                            Devolver
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('loans.extend', $loan) }}" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit"
+                                                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition duration-150">
+                                            Extender
+                                        </button>
+                                    </form>
+                                </div>
+                                @endcan
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Activo
+                                </span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

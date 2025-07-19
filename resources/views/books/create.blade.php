@@ -97,9 +97,9 @@
                             Número de Copias <span class="text-red-500">*</span>
                         </label>
                         <input type="number" id="copies_total" name="copies_total" value="{{ old('copies_total', 1) }}"
-                               min="1" max="100" required
-                               class="w-full border border-amber-300 rounded-lg px-3 py-3 bg-white/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                               placeholder="1">
+                            min="1" max="100" required
+                            class="w-full border border-amber-300 rounded-lg px-3 py-3 bg-white/50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="1">
                         @error('copies_total')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
