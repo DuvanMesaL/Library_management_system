@@ -8,6 +8,8 @@ use App\Models\Loan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -214,5 +216,78 @@ class BookController extends Controller
         }
 
         return view('books.loan', compact('book'));
+    }
+
+    /**
+     * Process a loan request for a specific book
+     */
+    public function processLoan(Request $request, Book $book)
+    {
+        Log::info('Entrando a processLoan', [
+            'user_id' => Auth::id(),
+            'book_id' => $book->id,
+            'request_all' => $request->all()
+        ]);
+
+        Log::info('Datos recibidos para validación', $request->all());
+
+        // Validate the request
+        $request->validate([
+            'loan_days' => 'required|integer|in:7,14,21,30',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        // Check if book is available
+        if (!$book->isAvailable()) {
+            return back()->with('error', 'El libro no está disponible para préstamo.');
+        }
+
+        // Check user loan limit (optional business rule)
+        $activeLoanCount = Loan::where('user_id', Auth::id())
+                            ->where('status', 'active')
+                            ->count();
+
+        if ($activeLoanCount >= 5) {
+            return back()->with('error', 'Has alcanzado el límite máximo de 5 préstamos activos.');
+        }
+
+        try {
+            // Cast loan_days to integer to avoid Carbon type error
+            $loanDays = (int) $request->loan_days;
+
+            DB::transaction(function () use ($request, $book, $loanDays) {
+                // Create the loan
+                $loan = Loan::create([
+                    'user_id' => Auth::id(),
+                    'book_id' => $book->id,
+                    'loan_date' => now()->toDateString(),
+                    'due_date' => now()->addDays($loanDays)->toDateString(),
+                    'status' => 'active',
+                    'notes' => $request->notes,
+                ]);
+
+                // Decrease book availability
+                $book->decreaseAvailability();
+
+                Log::info('Préstamo creado exitosamente', [
+                    'loan_id' => $loan->id,
+                    'due_date' => $loan->due_date
+                ]);
+            });
+
+            $dueDate = now()->addDays($loanDays)->format('d/m/Y');
+
+            return redirect()->route('loans.index')
+                ->with('success', "Préstamo creado exitosamente. Fecha de devolución: {$dueDate}");
+
+        } catch (\Exception $e) {
+            Log::error('Error al crear préstamo', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'book_id' => $book->id
+            ]);
+
+            return back()->with('error', 'Error al procesar el préstamo. Por favor, inténtalo de nuevo.');
+        }
     }
 }

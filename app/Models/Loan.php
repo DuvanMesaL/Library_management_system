@@ -138,4 +138,10 @@ class Loan extends Model
     {
         return $query->where('user_id', $userId);
     }
+
+
+    public function canBeClaimed()
+    {
+        return $this->isActive() && !$this->claims()->whereIn('status', ['pending', 'in_review'])->exists();
+    }
 }
